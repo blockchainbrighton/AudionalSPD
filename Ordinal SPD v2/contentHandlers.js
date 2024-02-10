@@ -53,7 +53,8 @@ function processJSONContent(json, pad) {
         console.log("Found audionalArt URL:", audionalArtUrl);
         setImageToPad(audionalArtUrl, pad);
     } else {
-        console.log("No audionalArt URL found in JSON");
+        console.log("No audionalArt URL found in JSON, loading default image.");
+        loadDefaultImage(pad); // Call function to load a default image
     }
 
     const base64AudioData = json.audioData;
@@ -64,6 +65,12 @@ function processJSONContent(json, pad) {
         console.log("No base64AudioData found in JSON");
     }
 }
+
+function loadDefaultImage(pad) {
+    const defaultImageUrl = "https://ordinals.com/content/40136786a9eb1020c87f54c63de1505285ec371ff35757b44d2cc57dbd932f22i0";
+    setImageToPad(defaultImageUrl, pad);
+}
+
 
 function attachBase64Audio(base64Data, pad) {
     console.log("Preparing audio data for pad:", pad.dataset.pad);
