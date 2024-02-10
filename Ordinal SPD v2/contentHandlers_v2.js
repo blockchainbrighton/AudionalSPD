@@ -45,15 +45,13 @@ function listJSONFields(json) {
 function processJSONContent(json, pad) {
     console.log("Processing JSON content for pad", pad.dataset.pad);
 
-    // Define the default image URL
-    const defaultImageUrl = "https://ordinals.com/content/40136786a9eb1020c87f54c63de1505285ec371ff35757b44d2cc57dbd932f22i0";
-
-    // Attempt to get the audionalArtUrl from the JSON, use default if not found
-    const audionalArtUrl = json.metadata?.recursiveURLs?.audionalArt || defaultImageUrl;
-
-    // Since we now ensure audionalArtUrl always has a value, no need for an else condition
-    console.log("Using image URL for pad:", audionalArtUrl);
-    setImageToPad(audionalArtUrl, pad);
+    const audionalArtUrl = json.metadata?.recursiveURLs?.audionalArt;
+    if (audionalArtUrl) {
+        console.log("Found audionalArt URL:", audionalArtUrl);
+        setImageToPad(audionalArtUrl, pad);
+    } else {
+        console.log("No audionalArt URL found in JSON");
+    }
 
     const base64AudioData = json.audioData;
     if (base64AudioData) {
@@ -61,58 +59,30 @@ function processJSONContent(json, pad) {
         attachBase64Audio(base64AudioData, pad);
     } else {
         console.log("No base64AudioData found in JSON");
-        // Consider if you want to handle cases where no audio data is found as well
     }
 }
 
-
-function loadBase64Audio(base64Data, pad) {
+function attachBase64Audio(base64Data, pad) {
     console.log("Attaching base64 audio data to pad:", pad.dataset.pad);
-
-    // Check if the pad already has an audio player and remove it if present
-    const existingAudioPlayer = pad.querySelector('audio');
-    if (existingAudioPlayer) {
-        pad.removeChild(existingAudioPlayer);
-    }
 
     const audioPlayer = document.createElement('audio');
     audioPlayer.src = base64Data;
     audioPlayer.controls = true;
-
     audioPlayer.onloadeddata = () => {
         console.log("Audio data loaded for pad:", pad.dataset.pad);
     };
-
     audioPlayer.onerror = (e) => {
         console.error("Error loading audio for pad:", pad.dataset.pad, e);
     };
 
-    // Clear the pad and add the new audio player
-    pad.innerHTML = ''; 
+    pad.innerHTML = ''; // Clear the pad
     pad.appendChild(audioPlayer);
     addDeleteButton(pad);
     pad.dataset.loaded = 'true';
 
-    // Adjust the pad's onclick to play or restart the attached audio
-    pad.onclick = () => {
-        if (!audioPlayer.paused) {
-            audioPlayer.pause(); // Optional: Pause before resetting if playing
-        }
-        audioPlayer.currentTime = 0; // Reset audio playback to the start
-        audioPlayer.play().then(() => {
-            console.log("Audio playback started for pad:", pad.dataset.pad);
-        }).catch((error) => {
-            console.error("Error playing audio for pad:", pad.dataset.pad, error);
-        });
-    };
-}
-
-function addPlaybackFunction(audioPlayer, pad) {
-    // Adjust the pad's onclick to play or restart the attached audio
+    // Adjust the pad's onclick to play the newly attached audio
     pad.onclick = () => {
         console.log("Attempting to play audio for pad:", pad.dataset.pad);
-        // Always start playback from the beginning
-        audioPlayer.currentTime = 0;
         audioPlayer.play().then(() => {
             console.log("Audio playback started for pad:", pad.dataset.pad);
         }).catch((error) => {
@@ -121,13 +91,8 @@ function addPlaybackFunction(audioPlayer, pad) {
     };
 }
 
-
 function setImageToPad(imgUrl, pad) {
-    // Define the default image URL
-    const defaultImageUrl = "https://ordinals.com/content/40136786a9eb1020c87f54c63de1505285ec371ff35757b44d2cc57dbd932f22i0";
-    
-    // Use the provided imageUrl or fallback to defaultImageUrl if imgUrl is not provided
-    const finalImageUrl = imgUrl || defaultImageUrl;
+    const updatedImgUrl = imgUrl.startsWith('https') ? imgUrl : `https://ordinals.com${imgUrl.startsWith('/') ? '' : '/'}${imgUrl}`;
 
     const img = new Image();
     img.onload = () => {
@@ -143,9 +108,8 @@ function setImageToPad(imgUrl, pad) {
         pad.innerHTML = 'Error loading image';
         pad.style.pointerEvents = 'auto';
     };
-    img.src = finalImageUrl;
+    img.src = updatedImgUrl;
 }
-
 
 function processHTMLContent(htmlContent, pad) {
     const parser = new DOMParser();
