@@ -1,21 +1,40 @@
 // uiHandlers.js
 
 function clearPad(pad) {
+    console.log(`Clearing pad ${pad.dataset.pad}`);
     pad.innerHTML = `Pad ${pad.dataset.pad}`; // Reset to default text, e.g., "Pad 1"
     pad.style.pointerEvents = 'auto'; // Re-enable pointer events for loading new content
     delete pad.dataset.loaded; // Remove the loaded attribute
+    console.log(`Pad ${pad.dataset.pad} cleared successfully`);
+}
+
+function clearAudioFromPad(pad) {
+    console.log(`Clearing audio from pad ${pad.dataset.pad}`);
+    const audioPlayer = pad.querySelector('audio');
+    if (audioPlayer) {
+        audioPlayer.pause(); // Stop any ongoing playback
+        pad.removeChild(audioPlayer); // Remove the audio element
+        console.log(`Audio cleared from pad ${pad.dataset.pad}`);
+    }
+    // If there's base64 audio data associated, remove it
+    delete pad.dataset.base64Audio;
 }
 
 function addDeleteButton(pad) {
+    console.log(`Adding delete button to pad ${pad.dataset.pad}`);
     const deleteBtn = document.createElement('div');
     deleteBtn.classList.add('delete-btn');
     deleteBtn.textContent = 'X';
     deleteBtn.onclick = function(event) {
         event.stopPropagation(); // Prevent triggering pad click
+        console.log(`Delete button clicked on pad ${pad.dataset.pad}`);
+        clearAudioFromPad(pad); // Clear any audio associated with the pad
         clearPad(pad);
     };
     pad.appendChild(deleteBtn);
+    console.log(`Delete button added to pad ${pad.dataset.pad}`);
 }
+
 
 function showModal() {
     let modal = document.getElementById('modal');
