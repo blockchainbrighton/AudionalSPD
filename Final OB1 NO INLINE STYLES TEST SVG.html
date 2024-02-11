@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OB1 #1 - Audional Art</title>
+</head>
+<body>
+    <img id="OB1_Image" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTA4MCIgaGVpZ2h0PSIxMDgwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9ImJsdWUiIC8+Cjwvc3ZnPg==" alt="Click to play audio">
+
+    <img id="audionalData" src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAALAAAFMwA3Nzc3Nzc3NzdLS0tLS0tLS0tfX19fX19fX19zc3Nzc3Nzc3OHh4eHh4eHh4ebm5ubm5ubm5uvr6+vr6+vr6/Dw8PDw8PDw8PX19fX19fX19fr6+vr6+vr6+v///////////8AAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAQvAAAAAAAABTMEu5unAAAAAAD/+xDEAAPAAAGkAAAAIAAANIAAAAT/f9y5VGv+LoKO0rJ/t1WuRgZJgEBEGnckH4PCXAkJA18SnZkiAVv+MZpflzhNel0SaUWeMH6BBVGmzNS4FVxoKaCgqv//j4cdIqlljBgUxQdMjf/7EsQpg8AAAaQAAAAgAAA0gAAABADVMEwVtEWMp/CKzAvwG49JTLEYi/zLXGlv/+5tNcwAQC0agIAIYCYB4JA+MMwSow/mbDbtGpMacO0wUwHR4B4DAKAmDtNNC6eYRFDAKmuxQLgKNP/7EMRTg8AAAaQAAAAgAAA0gAAABJjCfQYnkoAcDmrFZKAZTKFwATRI/8x8FsYFX7fX+lQ4s0XGPjX+u9hSwafLkg+78DCwqz/NFgSDUwqCJLAiCoIhlgiBImVFIoKAkGAhVCsFNioW//sSxH0DwAABpAAAACAAADSCgAAEQ0FJDP6bykxBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpMQU1FMy4xMDCq//sQxKcABGA7aBmlAACBhWvTtGAHqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqkxBTUUzLjEwMKr/+xLEroPFFC0oDf8qILmFpoK88ASqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr/+xDErQAIJG9WGbeAAJGHHcOSMAGqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqv/7EsSjg8AAAaQAAAAgAAA0gAAABKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqv/7EMTNg8AAAaQAAAAgAAA0gAAABKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//sSxNWDwAABpAAAACAAADSAAAAEqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//sQxNYDwAABpAAAACAAADSAAAAEqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo=" type="audio/mp3">
+Your browser does not support the audio element.
+</audio>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    let isPlaying = false;
+    let audioBuffer = null;
+    let nextNoteTime = 0; // When the next note is due.
+    let timerID = null; // Keep track of the timer so it can be cancelled
+    let lookahead = 0.1; // How far ahead to schedule audio (sec)
+    let scheduleInterval = 75; // How often to call scheduling function (ms)
+
+    async function fetchAndDecodeAudio(elementId) {
+        const audioElement = document.getElementById(elementId);
+        const sourceElement = audioElement.querySelector('source');
+        const audioSrc = sourceElement ? sourceElement.src : audioElement.src;
+
+        try {
+            const response = await fetch(audioSrc);
+            const arrayBuffer = await response.arrayBuffer();
+            audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        } catch (error) {
+            console.error("Error fetching or decoding audio data:", error);
+        }
+    }
+
+    function scheduleNote() {
+        while (nextNoteTime < audioContext.currentTime + lookahead) {
+            playAudioBuffer(nextNoteTime);
+            nextNoteTime += 0.7692; // Schedule a note every 1.5 seconds (39 BPM)
+        }
+    }
+
+    function playAudioBuffer(time) {
+        if (audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
+        
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+        source.start();
+    }
+
+    function startLoop() {
+        if (!isPlaying) {
+            isPlaying = true;
+            nextNoteTime = audioContext.currentTime;
+            scheduleNote();
+            timerID = setInterval(scheduleNote, scheduleInterval);
+        }
+    }
+
+    function stopLoop() {
+        if (isPlaying) {
+            clearInterval(timerID);
+            isPlaying = false;
+        }
+    }
+
+    const img = document.getElementById("OB1_Image");
+    img.style.display = "block";
+    img.style.margin = "auto";
+    img.style.marginTop = "10%";
+    img.style.width = "500px";
+    img.style.height = "500px";
+    
+    img.addEventListener("click", async () => {
+        console.log("Image clicked...");
+        if (isPlaying) {
+            stopLoop();
+        } else {
+            if (!audioBuffer) {
+                await fetchAndDecodeAudio("audionalData");
+            }
+            startLoop();
+        }
+    });
+
+    document.body.style.backgroundColor = "black";
+});
+
+
+
+</script>
+</body>
+</html>

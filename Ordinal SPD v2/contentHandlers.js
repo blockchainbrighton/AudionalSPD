@@ -66,73 +66,6 @@ function processJSONContent(json, pad) {
     }
 }
 
-function loadDefaultImage(pad) {
-    const defaultImageUrl = "https://ordinals.com/content/40136786a9eb1020c87f54c63de1505285ec371ff35757b44d2cc57dbd932f22i0";
-    setImageToPad(defaultImageUrl, pad);
-}
-
-
-function attachBase64Audio(base64Data, pad) {
-    console.log("Preparing audio data for pad:", pad.dataset.pad);
-
-    // Store base64Data on the pad for later access
-    pad.dataset.base64Audio = base64Data;
-
-    // Update pad's onclick to create and play a new audio element each time
-    pad.onclick = function() {
-        // Create a new audio element for each playback
-        const audioPlayer = document.createElement('audio');
-        audioPlayer.src = pad.dataset.base64Audio;
-        audioPlayer.controls = false; // Set to true if you want controls for each instance (not recommended for multiple playbacks)
-
-        // Automatically play when loaded, not waiting for the entire buffer if possible
-        audioPlayer.onloadeddata = () => audioPlayer.play();
-
-        audioPlayer.onerror = (e) => {
-            console.error("Error playing audio for pad:", pad.dataset.pad, e);
-        };
-
-        // Optionally, remove the audio element after playback is finished to clean up
-        audioPlayer.onended = () => {
-            audioPlayer.parentNode.removeChild(audioPlayer);
-        };
-
-        document.body.appendChild(audioPlayer); // Append to body or an off-screen container if controls are not needed
-    };
-
-    // Indicate that the pad is ready for playback
-    console.log("Audio ready for playback on pad:", pad.dataset.pad);
-    pad.dataset.loaded = 'true';
-}
-
-
-function setImageToPad(imgSrc, pad) {
-    // Clear existing content
-    pad.innerHTML = '';
-
-    const img = new Image();
-    img.onload = () => {
-        pad.appendChild(img);
-        img.style.display = 'block';
-        img.style.maxWidth = '100%';
-        img.style.maxHeight = '100%';
-        addDeleteButton(pad); // Assuming this function adds a delete button
-        pad.dataset.loaded = 'true';
-    };
-    img.onerror = () => {
-        console.error("Error loading image");
-        pad.innerHTML = 'Error loading image';
-    };
-
-    // Check if imgSrc is base64 data and use it directly if so
-    if (imgSrc.startsWith('data:image')) {
-        img.src = imgSrc;
-    } else {
-        // If not base64, prepend the domain if necessary
-        const updatedImgSrc = imgSrc.startsWith('http') ? imgSrc : `https://ordinals.com${imgSrc.startsWith('/') ? '' : '/'}${imgSrc}`;
-        img.src = updatedImgSrc;
-    }
-}
 
 
 function processHTMLContent(htmlContent, pad) {
@@ -182,6 +115,34 @@ function processHTMLContent(htmlContent, pad) {
 
 
 
+// Assuming the rest of the contentHandlers.js remains the same
+
+function attachBase64Audio(base64Data, pad) {
+    console.log("Preparing audio data for pad:", pad.dataset.pad);
+
+    // Initialize AudioSamplePlayer if not already done
+    if (!window.audioSamplePlayer) {
+        window.audioSamplePlayer = new AudioSamplePlayer();
+    }
+
+    // Use a unique key for each pad's audio to store and retrieve from AudioSamplePlayer
+    const audioKey = `padAudio_${pad.dataset.pad}`;
+
+    // Load the base64 audio data into the sample player, if not already done
+    if (!window.audioSamplePlayer.sampleBuffers[audioKey]) {
+        window.audioSamplePlayer.loadSampleFromBase64(audioKey, base64Data);
+    }
+
+    // Attach event listener to play the audio when the pad is clicked
+    pad.addEventListener('click', () => {
+        window.audioSamplePlayer.playSample(audioKey);
+    });
+
+    console.log("Audio ready for playback on pad:", pad.dataset.pad);
+    pad.dataset.loaded = 'true';
+}
+
+
 function attachAudio(audioSrc, pad) {
     const updatedAudioSrc = audioSrc.startsWith('http') ? audioSrc : `https://ordinals.com${audioSrc.startsWith('/') ? '' : '/'}${audioSrc}`;
 
@@ -191,4 +152,37 @@ function attachAudio(audioSrc, pad) {
     pad.appendChild(audioPlayer);
     pad.dataset.loaded = 'true';
     addDeleteButton(pad);
+}
+
+function setImageToPad(imgSrc, pad) {
+    // Clear existing content
+    pad.innerHTML = '';
+
+    const img = new Image();
+    img.onload = () => {
+        pad.appendChild(img);
+        img.style.display = 'block';
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '100%';
+        addDeleteButton(pad); // Assuming this function adds a delete button
+        pad.dataset.loaded = 'true';
+    };
+    img.onerror = () => {
+        console.error("Error loading image");
+        pad.innerHTML = 'Error loading image';
+    };
+
+    // Check if imgSrc is base64 data and use it directly if so
+    if (imgSrc.startsWith('data:image')) {
+        img.src = imgSrc;
+    } else {
+        // If not base64, prepend the domain if necessary
+        const updatedImgSrc = imgSrc.startsWith('http') ? imgSrc : `https://ordinals.com${imgSrc.startsWith('/') ? '' : '/'}${imgSrc}`;
+        img.src = updatedImgSrc;
+    }
+}
+
+function loadDefaultImage(pad) {
+    const defaultImageUrl = "https://ordinals.com/content/40136786a9eb1020c87f54c63de1505285ec371ff35757b44d2cc57dbd932f22i0";
+    setImageToPad(defaultImageUrl, pad);
 }

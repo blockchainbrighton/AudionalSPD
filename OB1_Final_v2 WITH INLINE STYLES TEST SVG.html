@@ -1,0 +1,102 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OB1 #1 - Audional Art</title><style>body{background-color:#000000;display:flex;justify-content:center;align-items:center;height:100vh;margin:0}img {width: auto;height: auto;max-width: 60%;max-height: 80vh;object-fit: contain;aspect-ratio: 1 / 1;}
+</style></head><body>
+<img id="OB1_Image" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTA4MCIgaGVpZ2h0PSIxMDgwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9ImJsdWUiIC8+Cjwvc3ZnPg==" alt="Click to play audio">
+<audio id="audionalData" loop>
+<img id="audionalData" src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAALAAAFMwA3Nzc3Nzc3NzdLS0tLS0tLS0tfX19fX19fX19zc3Nzc3Nzc3OHh4eHh4eHh4ebm5ubm5ubm5uvr6+vr6+vr6/Dw8PDw8PDw8PX19fX19fX19fr6+vr6+vr6+v///////////8AAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAQvAAAAAAAABTMEu5unAAAAAAD/+xDEAAPAAAGkAAAAIAAANIAAAAT/f9y5VGv+LoKO0rJ/t1WuRgZJgEBEGnckH4PCXAkJA18SnZkiAVv+MZpflzhNel0SaUWeMH6BBVGmzNS4FVxoKaCgqv//j4cdIqlljBgUxQdMjf/7EsQpg8AAAaQAAAAgAAA0gAAABADVMEwVtEWMp/CKzAvwG49JTLEYi/zLXGlv/+5tNcwAQC0agIAIYCYB4JA+MMwSow/mbDbtGpMacO0wUwHR4B4DAKAmDtNNC6eYRFDAKmuxQLgKNP/7EMRTg8AAAaQAAAAgAAA0gAAABJjCfQYnkoAcDmrFZKAZTKFwATRI/8x8FsYFX7fX+lQ4s0XGPjX+u9hSwafLkg+78DCwqz/NFgSDUwqCJLAiCoIhlgiBImVFIoKAkGAhVCsFNioW//sSxH0DwAABpAAAACAAADSCgAAEQ0FJDP6bykxBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpMQU1FMy4xMDCq//sQxKcABGA7aBmlAACBhWvTtGAHqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqkxBTUUzLjEwMKr/+xLEroPFFC0oDf8qILmFpoK88ASqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr/+xDErQAIJG9WGbeAAJGHHcOSMAGqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqv/7EsSjg8AAAaQAAAAgAAA0gAAABKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqv/7EMTNg8AAAaQAAAAgAAA0gAAABKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//sSxNWDwAABpAAAACAAADSAAAAEqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//sQxNYDwAABpAAAACAAADSAAAAEqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo=" type="audio/mp3">
+Your browser does not support the audio element.
+</audio>
+<script>
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Constants for timing
+    const bpm = 78;
+    const beatDurationMs = (60 / bpm) * 1000;
+
+    // State variables
+    let isLooping = false;
+    let audioBuffer = null; // To store the decoded audio data
+
+    // Function to fetch, decode, and store base64 audio data from an element
+    async function fetchAndDecodeAudio(elementId) {
+        const audioElement = document.getElementById(elementId);
+        const audioSrc = audioElement.src;
+
+        console.log("Attempting to decode audio from:", audioSrc);
+
+        if (audioSrc.startsWith('data:audio/mpeg;base64,')) {
+            try {
+                const base64Content = audioSrc.split(',')[1];
+                const arrayBuffer = base64ToArrayBuffer(base64Content);
+                console.log("ArrayBuffer created, length:", arrayBuffer.byteLength);
+
+                audioBuffer = await audioContext.decodeAudioData(arrayBuffer, () => {
+                    console.log("Audio decoded successfully.");
+                }, (error) => {
+                    console.error("Error during audio decoding:", error);
+                });
+            } catch (error) {
+                console.error("Error decoding audio data:", error);
+            }
+        }
+    }
+
+// Helper function to convert base64 string to ArrayBuffer
+function base64ToArrayBuffer(base64) {
+    const binaryString = window.atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
+
+
+    // Function to schedule and play the decoded audio buffer
+    function playAudioBuffer() {
+        if (audioBuffer) {
+            const source = audioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(audioContext.destination);
+            // Calculate precise start time based on BPM
+            let startTime = audioContext.currentTime;
+            let endTime = startTime + audioBuffer.duration;
+            source.start(startTime);
+            source.onended = () => {
+                if (isLooping) {
+                    // Schedule the next play to match the beat duration
+                    let nextPlayTime = endTime + (beatDurationMs / 1000 - audioBuffer.duration % (beatDurationMs / 1000));
+                    playAudioBuffer(nextPlayTime);
+                }
+            };
+        }
+    }
+
+    // Adjusted click event listener logic
+    document.getElementById("OB1_Image").addEventListener("click", async () => {
+        console.log("Click detected...");
+        // Attempt to resume the AudioContext in response to user interaction
+        try {
+            await audioContext.resume();
+            console.log("AudioContext resumed successfully.");
+        } catch (error) {
+            console.error("Error resuming AudioContext:", error);
+        }
+
+        if (!audioBuffer) { // Ensure audio is loaded before trying to play or stop
+            await fetchAndDecodeAudio("audionalData");
+        }
+        if (isLooping) {
+            console.log("Stopping loop...");
+            isLooping = false;
+        } else {
+            console.log("Starting loop...");
+            isLooping = true;
+            playAudioBuffer();
+        }
+    });
+
+</script>
+    
+</body>
+</html>
