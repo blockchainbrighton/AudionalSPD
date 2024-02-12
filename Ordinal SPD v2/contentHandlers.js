@@ -28,23 +28,21 @@ function loadFromURL(url) {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            const contentType = response.headers.get('content-type');
-            if (contentType.includes('application/json')) {
-                return response.json(); // Parse JSON response
-            } else if (contentType.includes('text/html')) {
-                return response.text(); // Get HTML content as text
+            return response.clone().json().then(json => {
+                return {type: 'application/json', content: json};
+            }).catch(() => {
+                return response.text().then(text => {
+                    return {type: 'text/html', content: text};
+                });
+            });
+        })
+        .then(({type, content}) => {
+            if (type === 'application/json') {
+                processJSONContent(content, currentPad); // Process JSON content
+            } else if (type === 'text/html') {
+                processHTMLContent(content, currentPad); // Process HTML content
             } else {
                 throw new Error('Invalid content type. Expected JSON or HTML.');
-            }
-        })
-        .then(content => {
-            try {
-                // Attempt to parse JSON content
-                const json = JSON.parse(content);
-                processJSONContent(json, currentPad); // Process JSON content
-            } catch (err) {
-                // If parsing fails, assume it's HTML content
-                processHTMLContent(content, currentPad); // Process HTML content
             }
         })
         .catch(error => {
@@ -53,11 +51,7 @@ function loadFromURL(url) {
         });
 }
 
-function listJSONFields(json) {
-    const fields = Object.keys(json);
-    console.log('Fields in JSON:', fields);
-    alert('Fields found in JSON: ' + fields.join(', '));
-}
+
 
 function processJSONContent(json, pad) {
     console.log("Processing JSON content for pad", pad.dataset.pad);
@@ -80,7 +74,11 @@ function processJSONContent(json, pad) {
     }
 }
 
-
+function listJSONFields(json) {
+    const fields = Object.keys(json);
+    console.log('Fields in JSON:', fields);
+    alert('Fields found in JSON: ' + fields.join(', '));
+}
 
 function processHTMLContent(htmlContent, pad) {
     const parser = new DOMParser();
