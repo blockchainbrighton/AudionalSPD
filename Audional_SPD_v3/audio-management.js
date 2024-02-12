@@ -1,4 +1,6 @@
 // File: audio-management.js
+import { loadSampleFromLocalFile, loadSampleFromURL, clearPadContent } from './sample-loader.js';
+
 
 // Functions for loading samples from local files and URLs, playing samples,
 // and clearing pad content, as previously defined
@@ -24,4 +26,4 @@ function handleLoopPlayback() {
     // Handle loop playback with automated pad triggers based on the sequencer
 }
 
-export { loadSampleFromLocalFile, loadSampleFromURL, clearPadContent, togglePlayStopLoop, toggleRecordSession, handleLoopPlayback };
+export { togglePlayStopLoop, toggleRecordSession, handleLoopPlayback };

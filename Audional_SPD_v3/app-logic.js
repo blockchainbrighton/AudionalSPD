@@ -1,6 +1,6 @@
 // File: app-logic.js
 import { setupTriggerPads, setupStepSequencer, setupControlButtons } from './ui-setup.js';
-import { loadSampleFromLocalFile, loadSampleFromURL, clearPadContent, togglePlayStopLoop, toggleRecordSession, handleLoopPlayback } from './audio-management.js';
+import {loadInitialSamples} from './sample-loader.js';
 
 /**
  * Initializes the application.

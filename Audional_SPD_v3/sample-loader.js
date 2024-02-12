@@ -24,4 +24,8 @@ function clearPadContent(padId) {
     // Logic to clear content from a pad
 }
 
-export { loadSampleFromLocalFile, loadSampleFromURL, clearPadContent };
+function loadInitialSamples() {
+    // Logic to load initial samples
+}
+
+export { loadSampleFromLocalFile, loadSampleFromURL, clearPadContent, loadInitialSamples };

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sample Pad Application</title>
+    <link rel="stylesheet" href="style.css"> <!-- Link to your CSS file -->
+</head>
+<body>
+    <div class="title">Ordinal SPD - Sample Pad</div>
+    <div class="pad-container"> <!-- Corrected class name from id to class -->
+        <div class="pad" data-pad="1">OrdSPD 1</div>
+        <div class="pad" data-pad="2">OrdSPD 2</div>
+        <div class="pad" data-pad="3">OrdSPD 3</div>
+        <div class="pad" data-pad="4">OrdSPD 4</div>
+        <div class="pad" data-pad="5">OrdSPD 5</div>
+        <div class="pad" data-pad="6">OrdSPD 6</div>
+        <div class="pad" data-pad="7">OrdSPD 7</div>
+        <div class="pad" data-pad="8">OrdSPD 8</div>
+        <div class="pad" data-pad="9">OrdSPD 9</div>
+    </div>
+    
+    <div id="control-panel">
+        <!-- <div class="playBtn">PLAY</div>-->
+        <div canvas="BPM Display"></div>
+        <!--<div class="recordBtn">REC</div> -->
+    </div>
+
+
+    <!-- ES6 Modules Script -->
+    <!-- Ensure the path to your main module is correct -->
+    <script type="module" src="app-logic.js"></script>
+    <script type="module" src="audio-management.js"></script>
+    <script type="module" src="sample-loader.js"></script>
+    <script type="module" src="sequencer.js"></script>
+    <script type="module" src="ui-setup.js"></script>
+    <script type="module" src="bpm-display.js"></script>
+
+
+    
+</body>
+</html>
