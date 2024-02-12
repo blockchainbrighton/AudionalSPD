@@ -1,0 +1,125 @@
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center; /* Center the text */
+  color:#ff7b00; /* Red color */
+}
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #000000;
+  display: flex;
+  justify-content: center;
+  flex-direction: column; /* Arrange elements vertically */
+  align-items: center; /* Center horizontally */
+  height: 100vh;
+}
+.pad-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  max-width: 600px; /* Adjust as needed for proper spacing */
+}
+.pad {
+  width: 150px; /* Size of each pad */
+  height: 150px; /* Size of each pad */
+  background-color: #fff;
+  border: 2px solid #ddd;
+  margin: 10px; /* Space between pads */
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px; /* Adjust size as needed */
+  color: #bbb; /* Pad label color */
+}
+.delete-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  line-height: 20px;
+  cursor: pointer;
+}
+.hidden {
+  display: none; /* Hide elements when needed */
+}
+#control-panel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px; /* Adjust the space between controls as needed */
+  margin-top: 20px; /* Space above the control panel */
+}
+
+.playBtn, .recordBtn {
+  width: 150px; /* Define a specific width */
+  height: 50px; /* Define a specific height */
+  line-height: 50px; /* Centers text vertically */
+  text-align: center; /* Centers text horizontally */
+  background-color: red; /* Example color */
+  color: white;
+  font-size: 1em;
+  border: none;
+  cursor: pointer;
+}
+
+/* Example for non-repeating background */
+.playBtn {
+  background-color: green; /* Green background for play */
+}
+
+.recordBtn {
+  background-color: red; /* Red background for record */
+}
+
+.bpm-display {
+  width: 150px; /* Slightly larger for better visibility */
+  height: 50px; /* Adjust height as needed */
+  background-color: black; /* Mimic old digital display */
+  color: red; /* LED-style color */
+  font-family: 'Digital-7', monospace; /* Use a digital font */
+  font-size: 28px; /* Larger font for readability */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #333; /* Subtle border for a classic look */
+}
+
+.bpm-display input {
+  background-color: black;
+  color: red;
+  border: none;
+  text-align: center;
+  width: 100%;
+  font-family: 'Digital-7', monospace;
+  font-size: 28px;
+}
+
+.bpm-button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centers the buttons horizontally */
+}
+
+/* Optional: Style for buttons to increase/decrease BPM */
+.bpm-button {
+  font-size: 10px; /* Adjust the font size as needed */
+  width: 20px; /* Adjust the width as needed */
+  height: 25px; /* Adjust the height as needed */
+  background-color: #707070; /* Dark buttons */
+  color: white;
+  border: none;
+  cursor: pointer;
+
+}
+

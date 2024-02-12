@@ -28,14 +28,28 @@ function loadFromURL(url) {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            return response.json(); // Assume the response is JSON and parse it
+            const contentType = response.headers.get('content-type');
+            if (contentType.includes('application/json')) {
+                return response.json(); // Parse JSON response
+            } else if (contentType.includes('text/html')) {
+                return response.text(); // Get HTML content as text
+            } else {
+                throw new Error('Invalid content type. Expected JSON or HTML.');
+            }
         })
-        .then(json => {
-            processJSONContent(json, currentPad); // Process the JSON content
+        .then(content => {
+            try {
+                // Attempt to parse JSON content
+                const json = JSON.parse(content);
+                processJSONContent(json, currentPad); // Process JSON content
+            } catch (err) {
+                // If parsing fails, assume it's HTML content
+                processHTMLContent(content, currentPad); // Process HTML content
+            }
         })
         .catch(error => {
             console.error('Error loading or parsing URL:', error);
-            alert('Failed to load or parse from URL. Make sure it is a valid JSON.');
+            alert('Failed to load or parse from URL. Make sure it is a valid JSON or HTML file.');
         });
 }
 
@@ -66,45 +80,83 @@ function processJSONContent(json, pad) {
     }
 }
 
-function loadDefaultImage(pad) {
-    const defaultImageUrl = "https://ordinals.com/content/40136786a9eb1020c87f54c63de1505285ec371ff35757b44d2cc57dbd932f22i0";
-    setImageToPad(defaultImageUrl, pad);
+
+
+function processHTMLContent(htmlContent, pad) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlContent, "text/html");
+    const imgSrc = doc.querySelector('img') ? doc.querySelector('img').src : '';
+
+    clearPad(pad); // Assuming this function clears the pad of previous content
+
+    if (imgSrc) {
+        setImageToPad(imgSrc, pad); // Set the image to the pad, if any
+    }
+
+    // Extract base64 audio data from the <audio> element or its <source> child
+    let base64AudioData = null;
+    const audioElement = doc.querySelector('audio');
+    const sourceElement = doc.querySelector('audio source');
+    
+    if (audioElement && audioElement.src.startsWith('data:audio')) {
+        base64AudioData = audioElement.src;
+    } else if (sourceElement && sourceElement.src.startsWith('data:audio')) {
+        base64AudioData = sourceElement.src;
+    }
+
+    if (base64AudioData) {
+        console.log("Found base64AudioData in HTML content, attaching to pad");
+        attachBase64Audio(base64AudioData, pad);
+    } else {
+        console.error("No base64AudioData found in HTML content");
+        // Optionally handle the case where no base64 audio data is found
+    }
+
+    // Additional logic to mark the pad as loaded or to add UI elements like a delete button
+    pad.dataset.loaded = 'true';
+    addDeleteButton(pad); // Add a delete button to the pad, if applicable
 }
 
+
+
+// Assuming the rest of the contentHandlers.js remains the same
 
 function attachBase64Audio(base64Data, pad) {
     console.log("Preparing audio data for pad:", pad.dataset.pad);
 
-    // Store base64Data on the pad for later access
-    pad.dataset.base64Audio = base64Data;
+    // Initialize AudioSamplePlayer if not already done
+    if (!window.audioSamplePlayer) {
+        window.audioSamplePlayer = new AudioSamplePlayer();
+    }
 
-    // Update pad's onclick to create and play a new audio element each time
-    pad.onclick = function() {
-        // Create a new audio element for each playback
-        const audioPlayer = document.createElement('audio');
-        audioPlayer.src = pad.dataset.base64Audio;
-        audioPlayer.controls = false; // Set to true if you want controls for each instance (not recommended for multiple playbacks)
+    // Use a unique key for each pad's audio to store and retrieve from AudioSamplePlayer
+    const audioKey = `padAudio_${pad.dataset.pad}`;
 
-        // Automatically play when loaded, not waiting for the entire buffer if possible
-        audioPlayer.onloadeddata = () => audioPlayer.play();
+    // Load the base64 audio data into the sample player, if not already done
+    if (!window.audioSamplePlayer.sampleBuffers[audioKey]) {
+        window.audioSamplePlayer.loadSampleFromBase64(audioKey, base64Data);
+    }
 
-        audioPlayer.onerror = (e) => {
-            console.error("Error playing audio for pad:", pad.dataset.pad, e);
-        };
+    // Attach event listener to play the audio when the pad is clicked
+    pad.addEventListener('click', () => {
+        window.audioSamplePlayer.playSample(audioKey);
+    });
 
-        // Optionally, remove the audio element after playback is finished to clean up
-        audioPlayer.onended = () => {
-            audioPlayer.parentNode.removeChild(audioPlayer);
-        };
-
-        document.body.appendChild(audioPlayer); // Append to body or an off-screen container if controls are not needed
-    };
-
-    // Indicate that the pad is ready for playback
     console.log("Audio ready for playback on pad:", pad.dataset.pad);
     pad.dataset.loaded = 'true';
 }
 
+
+function attachAudio(audioSrc, pad) {
+    const updatedAudioSrc = audioSrc.startsWith('http') ? audioSrc : `https://ordinals.com${audioSrc.startsWith('/') ? '' : '/'}${audioSrc}`;
+
+    const audioPlayer = document.createElement('audio');
+    audioPlayer.src = updatedAudioSrc;
+    audioPlayer.controls = true;
+    pad.appendChild(audioPlayer);
+    pad.dataset.loaded = 'true';
+    addDeleteButton(pad);
+}
 
 function setImageToPad(imgSrc, pad) {
     // Clear existing content
@@ -134,61 +186,7 @@ function setImageToPad(imgSrc, pad) {
     }
 }
 
-
-function processHTMLContent(htmlContent, pad) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlContent, "text/html");
-    const imgSrc = doc.querySelector('img') ? doc.querySelector('img').src : '';
-    // Update to use just the audio element if source is nested within
-    const audioSrc = (doc.querySelector('audio source') ? doc.querySelector('audio source').src : '') || (doc.querySelector('audio') ? doc.querySelector('audio').src : '');
-
-    clearPad(pad); // Assuming this function clears the pad of previous content
-
-    if (imgSrc) {
-        setImageToPad(imgSrc, pad); // Reuse setImageToPad function if applicable
-    }
-
-    if (audioSrc) {
-        // Store the audio source for later access
-        pad.dataset.audioSrc = audioSrc;
-
-        // Update pad's onclick to dynamically create and play audio
-        pad.onclick = () => {
-            // Dynamically create a new audio element for playback
-            const audioPlayer = document.createElement('audio');
-            audioPlayer.src = pad.dataset.audioSrc;
-            audioPlayer.controls = false; // Set false to not show controls for each playback instance
-
-            audioPlayer.onloadeddata = () => audioPlayer.play();
-
-            audioPlayer.onerror = (e) => {
-                console.error("Error playing audio for pad:", pad.dataset.pad, e);
-            };
-
-            // Optionally, remove the audio element after playback to clean up
-            audioPlayer.onended = () => {
-                audioPlayer.parentNode.removeChild(audioPlayer);
-            };
-
-            // Append to the document body or a specific off-screen container to play without adding to the visible UI
-            document.body.appendChild(audioPlayer);
-        };
-
-        // Mark the pad as ready for audio playback
-        pad.dataset.loaded = 'true';
-        addDeleteButton(pad); // Add a delete button to the pad
-    }
-}
-
-
-
-function attachAudio(audioSrc, pad) {
-    const updatedAudioSrc = audioSrc.startsWith('http') ? audioSrc : `https://ordinals.com${audioSrc.startsWith('/') ? '' : '/'}${audioSrc}`;
-
-    const audioPlayer = document.createElement('audio');
-    audioPlayer.src = updatedAudioSrc;
-    audioPlayer.controls = true;
-    pad.appendChild(audioPlayer);
-    pad.dataset.loaded = 'true';
-    addDeleteButton(pad);
+function loadDefaultImage(pad) {
+    const defaultImageUrl = "https://ordinals.com/content/40136786a9eb1020c87f54c63de1505285ec371ff35757b44d2cc57dbd932f22i0";
+    setImageToPad(defaultImageUrl, pad);
 }
